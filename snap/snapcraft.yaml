@@ -1,0 +1,148 @@
+name: lidarr-tak
+summary: UnOfficial release of Lidarr
+description: |
+  **Lidarr is a music collection manager for Usenet and BitTorrent users.**
+  It can monitor multiple RSS feeds for new tracks from your favorite artists 
+  and will grab, sort and rename them. It can also be configured 
+  to automatically upgrade the quality of files already downloaded 
+  when a better quality format becomes available.
+
+  * The web interface is accessible by default at http://localhost:8686
+  * See https://lidarr.audio for more details.
+
+
+  **Lidarr Release 2+**
+  * Core20 is still required for dependencies
+  * Service is restarted on any condition.
+
+  **Post install commands required to access media folders and see resources :**
+
+  sudo snap connect lidarr-tak:removable-media
+
+  sudo snap connect lidarr-tak:mount-observe
+  
+  **Post install commands required to access home folder :**
+  
+  sudo snap connect lidarr-tak:home
+  
+  **!!! Files can only be written in a directory owned by 'root' !!!**
+  
+  This is due to current behavior and restrictions of snaps running as daemon by Canonical.\
+  Check documentation on GitHub: https://github.com/TehAppKiller/lidarr-tak
+website: https://lidarr.audio
+source-code: https://github.com/TehAppKiller/lidarr-tak
+issues: https://github.com/TehAppKiller/lidarr-tak/issues
+contact: tehappkiller@proton.me
+donation: https://whydonate.com/en/fundraising/help-teh-devz
+license: MIT
+icon: icon.svg
+grade: stable
+confinement: strict
+base: core20
+adopt-info: lidarr
+architectures:
+  - build-on: [amd64]
+  - build-on: [arm64]
+  - build-on: [armhf]
+
+apps:
+  lidarr:
+    command: bin/run-lidarr.sh
+    daemon: simple
+    restart-condition: always
+    plugs:
+      - mount-observe
+      - network
+      - network-bind
+      - removable-media
+      - home
+      
+plugs:
+  home:
+    read: all
+
+parts:
+  lidarr:
+    plugin: nil
+    source: .
+    override-pull: |
+      # Architecture
+      case "$SNAPCRAFT_TARGET_ARCH" in
+        amd64) SRC_ARCH="x64" ;;
+        arm64) SRC_ARCH="arm64" ;;
+        armhf) SRC_ARCH="arm" ;;
+      esac
+
+      # Pull
+      rm -rf $SNAPCRAFT_PART_SRC/{,.[!.],..?}*
+      wget "http://lidarr.servarr.com/v1/update/master/updatefile?os=linux&runtime=netcore&arch=$SRC_ARCH" -O srcfile
+      tar xvf srcfile
+
+      snapcraftctl pull
+    override-build: |
+      # Architecture
+      case "$SNAPCRAFT_TARGET_ARCH" in
+        amd64) SRC_ARCH="x64" ;;
+        arm64) SRC_ARCH="arm64" ;;
+        armhf) SRC_ARCH="arm" ;;
+      esac
+
+      # Get Last Source Tag version and Check Snap (with same Source) version
+      src_version=$(curl -sL "http://lidarr.servarr.com/v1/update/master/changes?os=linux&runtime=netcore&arch=$SRC_ARCH" | sed -nre "s/^[^0-9]*([0-9\.]*).*/\1/p")
+      echo "Source last tag: ${src_version}"
+      snap_last_version=$(curl -sL -H "Snap-Device-Series: 16" "https://api.snapcraft.io/v2/snaps/info/lidarr-tak?architecture=${SNAPCRAFT_TARGET_ARCH}&fields=version" | sed -nre "s/^.*\"stable\"\,\"track\"\:\"latest\"\}\,\"version\"\:\"([^\"]*)\".*/\1/p");
+      echo "Snap last version: ${snap_last_version}"
+      snap_build_with_same_version=$(echo $snap_last_version | sed -nre "s/^($src_version.*).*/\1/p");
+      # Same version ?
+      if [ -z "$snap_build_with_same_version" ]
+      then
+        new_snap_version="${src_version}";
+      else
+        # Get snap build version
+        snap_build=$(echo $snap_build_with_same_version | sed -nre 's/^.*-v([0-9]*).*/\1/p');
+        # Already a build version ?
+        if [ -z "$snap_build" ]
+        then
+          # init @v2
+          new_snap_build="2";
+        else
+          # increment @v+1
+          new_snap_build=$(($snap_build+1));
+        fi
+
+        new_snap_version="${src_version}-v${new_snap_build}";
+      fi
+
+      snapcraftctl set-version $new_snap_version
+
+      # Build
+      INST_DIR="$SNAPCRAFT_PART_INSTALL/Lidarr"
+      mkdir -p "$INST_DIR"
+      cp -a Lidarr/* $INST_DIR
+
+      snapcraftctl build
+    build-packages:
+      - curl
+      - wget
+      - libssl-dev
+    prime:
+      - Lidarr
+
+  local:
+    plugin: dump
+    source: snap/local
+    override-prime: |
+      snapcraftctl prime
+      chmod +rx $SNAPCRAFT_PRIME/bin/run-lidarr.sh
+
+  deps:
+    plugin: nil
+    source: .
+    stage-packages:
+      - liblttng-ust0
+      - sqlite3
+      - libicu66
+      - libchromaprint-tools
+    stage:
+      - usr/bin/sqlite*
+      - usr/lib
