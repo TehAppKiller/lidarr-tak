@@ -6,6 +6,7 @@ Canonical Snap for Lidarr\
 https://snapcraft.io/lidarr-tak
 
 ## Lidarr Description
+<img src="/icon.svg" width="100">
 Lidarr is a music collection manager for Usenet and BitTorrent users.
 It can monitor multiple RSS feeds for new tracks from your favorite artists 
 and will grab, sort and rename them. It can also be configured 
