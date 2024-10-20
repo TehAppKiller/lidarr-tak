@@ -1,5 +1,7 @@
 # lidarr-tak
 [![lidarr-tak](https://snapcraft.io/lidarr-tak/badge.svg)](https://snapcraft.io/lidarr-tak)
+![snap arch](https://badgen.net/snapcraft/architecture/lidarr-tak)
+![snap size](https://badgen.net/snapcraft/size/lidarr-tak/amd64/stable)
 
 ## Snap Description
 Canonical Snap for Lidarr\
