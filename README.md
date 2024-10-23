@@ -22,7 +22,6 @@ See https://lidarr.audio for more details.
 The web interface is accessible by default at http://localhost:8686
 
 Lidarr Release 2+\
-Core20 is still required for dependencies\
 Service is restarted on any condition.
 
 Post install commands required to access media folders and see resources :
