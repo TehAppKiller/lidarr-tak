@@ -1,4 +1,5 @@
 name: lidarr-tak
+title: lidarr-tak
 summary: UnOfficial release of Lidarr
 description: |
   **Lidarr is a music collection manager for Usenet and BitTorrent users.**
@@ -11,7 +12,7 @@ description: |
   * See https://lidarr.audio for more details.
 
 
-  **Lidarr Release 2+**
+  **Lidarr Release**
   * Service is restarted on any condition.
 
   **Post install commands required to access media folders and see resources :**
@@ -28,13 +29,13 @@ description: |
 website: https://lidarr.audio
 source-code: https://github.com/TehAppKiller/lidarr-tak
 issues: https://github.com/TehAppKiller/lidarr-tak/issues
-contact: mailto:tehappkiller@proton.me
+contact: ['mailto:tehappkiller@proton.me', 'https://mastodon.social/@TehAppKiller']
 donation: https://whydonate.com/en/fundraising/help-teh-devz
 license: MIT
 icon: icon.svg
 grade: stable
 confinement: strict
-base: core24
+base: core26
 adopt-info: lidarr
 platforms:
   amd64:
@@ -72,7 +73,9 @@ parts:
       - liburcu-dev
       - libnuma-dev
     prime:
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/liblttng-ust*.so*
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/liblttng-ust.so*
+      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/liblttng-ust-tracepoint.so*
+      #- usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/liblttng-ust*.so*
     
   lidarr:
     after:
@@ -149,6 +152,7 @@ parts:
     plugin: dump
     source: snap/local
     override-prime: |
+    
       craftctl default
       chmod +rx $CRAFT_PRIME/bin/run-lidarr.sh
 
@@ -159,10 +163,6 @@ parts:
       - liburcu8t64
       - libnuma1
       - sqlite3
-      - libchromaprint-tools
-      - libicu74
-    prime:
-      - usr/bin/sqlite*
-      - usr/bin/fpcalc*
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/*.so*
+      - libicu78
+      #- libchromaprint-tools # fpcalc is delivered with Lidarr and not superseedable
       
