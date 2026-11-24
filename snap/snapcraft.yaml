@@ -53,33 +53,15 @@ apps:
       - network-bind
       - removable-media
       - home # useless for now ; if snaps are allowed to read /home folder one day...
+      
+  # Snap store "Launch" button Open webservice url in default browser
+  lidarr-tak:
+    command: bin/launch-browser.sh
+    plugs:
+      - desktop
 
 parts:
-  lttng-ust: # Avoid Core20 dependency
-    source-type: git
-    source: https://github.com/lttng/lttng-ust.git
-    source-tag: v2.12.10
-    source-depth: 1
-    plugin: autotools
-    autotools-configure-parameters:
-      - --prefix=/usr
-      - --libdir=/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR
-      - --disable-man-pages
-      - --disable-examples
-    override-build: |
-      ./bootstrap
-      craftctl default
-    build-packages:
-      - liburcu-dev
-      - libnuma-dev
-    prime:
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/liblttng-ust.so*
-      - usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/liblttng-ust-tracepoint.so*
-      #- usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/liblttng-ust*.so*
-    
   lidarr:
-    after:
-      - lttng-ust
     plugin: nil
     source: .
     override-pull: |
@@ -96,6 +78,10 @@ parts:
       wget "${download_url}" -O srcfile
       #wget "http://lidarr.servarr.com/v1/update/master/updatefile?os=linux&runtime=netcore&arch=$SRC_ARCH" -O srcfile
       tar xvf srcfile
+      
+      # Remove Update part
+      rm -rf Lidarr/Lidarr.Update
+      rm -f Lidarr/libcoreclrtraceptprovider.so*
       
       craftctl default
     override-build: |
@@ -155,14 +141,12 @@ parts:
     
       craftctl default
       chmod +rx $CRAFT_PRIME/bin/run-lidarr.sh
+      chmod +rx $CRAFT_PRIME/bin/launch-browser.sh
 
   deps:
     plugin: nil
     source: .
     stage-packages:
-      - liburcu8t64
-      - libnuma1
       - sqlite3
       - libicu78
-      #- libchromaprint-tools # fpcalc is delivered with Lidarr and not superseedable
       

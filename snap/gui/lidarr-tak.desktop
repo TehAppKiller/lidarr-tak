@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Lidarr-tak
+Comment=Open webUI
+Type=Application
+Exec=lidarr-tak
+Icon=${SNAP}/meta/gui/icon.svg
